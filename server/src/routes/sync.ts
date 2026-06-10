@@ -55,6 +55,23 @@ export async function syncRoutes(app: FastifyInstance) {
     return result;
   });
 
+  app.post('/api/sync/push-to-edges', async (request, reply) => {
+    const user = requireAuth(request, reply);
+    if (!user) return;
+
+    if (config.role !== 'hub') {
+      return reply.code(400).send({ error: 'Push is only available on hub servers' });
+    }
+
+    // Build current sync bundle to make available for edge devices to pull
+    const bundle = buildSyncBundle();
+    return { 
+      ok: true, 
+      version: bundle.version, 
+      message: 'Updates ready. Edge devices will sync on next interval or can pull manually.' 
+    };
+  });
+
   app.get('/api/sync/status', async (request, reply) => {
     const user = requireAuth(request, reply);
     if (!user) return;
