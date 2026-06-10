@@ -42,6 +42,7 @@ export const api = {
       body: JSON.stringify({ email, display_name, password }),
     }),
   syncPull: () => request<{ ok: boolean; message: string }>('/api/sync/pull', { method: 'POST' }),
+  syncPush: () => request<{ ok: boolean; message: string; version: number }>('/api/sync/push-to-edges', { method: 'POST' }),
   syncStatus: () =>
     request<{ role: string; hubConfigured: boolean; syncHubUrl: string | null; lastSyncAt: string | null }>(
       '/api/sync/status',
