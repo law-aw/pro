@@ -21,13 +21,26 @@ export default function KioskHome() {
   const [category, setCategory] = useState('All');
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [idle, setIdle] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     const load = () => api.getPublicNotices().then((data) => setNotices(data.notices));
     load();
-    const interval = setInterval(load, 30_000);
+    const interval = setInterval(load, 2000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleSyncNow = async () => {
+    setSyncing(true);
+    try {
+      const data = await api.getPublicNotices();
+      setNotices(data.notices);
+    } catch (error) {
+      console.error('Sync failed:', error);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     let timer = window.setTimeout(() => setIdle(true), 60_000);
@@ -120,6 +133,9 @@ export default function KioskHome() {
         </button>
         <button type="button" className="btn btn-secondary" onClick={() => setSearch('')}>
           Clear search
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={handleSyncNow} disabled={syncing}>
+          {syncing ? 'Syncing...' : 'Sync now'}
         </button>
         <button type="button" className="btn" onClick={() => window.location.href = '/admin/login'}>
           Staff login

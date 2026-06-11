@@ -81,14 +81,16 @@ if (deptCount.count === 0) {
   `).run('Southern Delta University', 'Electrical Engineering');
 }
 
-// Initialize default admin if none exist
-const adminCount = db.prepare('SELECT COUNT(*) as count FROM admin_users').get() as { count: number };
-if (adminCount.count === 0) {
-  // Import here to avoid circular dependency
-  const { createAdmin } = await import('./auth.js');
-  createAdmin('admin@southerndelta.edu', 'Department Admin', 'admin123');
-  console.log('✓ Created default admin: admin@southerndelta.edu / admin123');
-  console.log('  Change this password after first login!');
+export async function initializeDefaultAdmin() {
+  // Initialize default admin if none exist
+  const adminCount = db.prepare('SELECT COUNT(*) as count FROM admin_users').get() as { count: number };
+  if (adminCount.count === 0) {
+    // Import here to avoid circular dependency
+    const { createAdmin } = await import('./auth.js');
+    createAdmin('admin@southerndelta.edu', 'Department Admin', 'admin123');
+    console.log('✓ Created default admin: admin@southerndelta.edu / admin123');
+    console.log('  Change this password after first login!');
+  }
 }
 
 export function getDepartment(): Department {

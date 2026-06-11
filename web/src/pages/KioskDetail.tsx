@@ -11,7 +11,10 @@ export default function KioskDetail() {
 
   useEffect(() => {
     if (!id) return;
-    api.getPublicNotice(id).then((data) => setNotice(data.notice));
+    const load = () => api.getPublicNotice(id).then((data) => setNotice(data.notice));
+    load();
+    const interval = setInterval(load, 2000);
+    return () => clearInterval(interval);
   }, [id]);
 
   if (!notice) {

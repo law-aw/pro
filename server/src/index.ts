@@ -54,7 +54,6 @@ if (fs.existsSync(webIndex)) {
   await app.register(fastifyStatic, {
     root: config.webDist,
     prefix: '/',
-    decorateReply: false,
   });
 
   app.setNotFoundHandler(async (request, reply) => {

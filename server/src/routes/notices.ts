@@ -79,6 +79,10 @@ export async function noticeRoutes(app: FastifyInstance) {
     const id = randomUUID();
     const now = new Date().toISOString();
 
+    // Handle empty strings for date fields
+    const publishAt = (input.publish_at && input.publish_at.trim()) ? input.publish_at : now;
+    const expiresAt = (input.expires_at && input.expires_at.trim()) ? input.expires_at : null;
+
     db.prepare(`
       INSERT INTO notices (
         id, title, body, category, priority, status, audience, location,
@@ -91,15 +95,15 @@ export async function noticeRoutes(app: FastifyInstance) {
       input.body,
       input.category,
       input.priority ?? 'normal',
-      input.status ?? 'draft',
+      input.status || 'published',
       input.audience ?? 'all',
       input.location ?? null,
       input.event_start ?? null,
       input.event_end ?? null,
       imagePath,
       attachmentPath,
-      input.publish_at ?? now,
-      input.expires_at ?? null,
+      publishAt,
+      expiresAt,
       user.id,
       user.id,
       now,
@@ -135,6 +139,12 @@ export async function noticeRoutes(app: FastifyInstance) {
     const input = fields as unknown as NoticeInput;
     const now = new Date().toISOString();
 
+    // Handle empty strings for date fields
+    const publishAt = (input.publish_at && input.publish_at.trim()) ? input.publish_at : existing.publish_at;
+    const expiresAt = (input.expires_at !== undefined) 
+      ? ((input.expires_at && input.expires_at.trim()) ? input.expires_at : null)
+      : existing.expires_at;
+
     db.prepare(`
       UPDATE notices SET
         title = ?, body = ?, category = ?, priority = ?, status = ?, audience = ?,
@@ -153,8 +163,8 @@ export async function noticeRoutes(app: FastifyInstance) {
       input.event_end !== undefined ? input.event_end : existing.event_end,
       imagePath,
       attachmentPath,
-      input.publish_at ?? existing.publish_at,
-      input.expires_at !== undefined ? input.expires_at : existing.expires_at,
+      publishAt,
+      expiresAt,
       user.id,
       now,
       existing.id,

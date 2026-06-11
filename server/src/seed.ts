@@ -1,14 +1,8 @@
 import { createAdmin } from './auth.js';
-import { db } from './db.js';
+import { db, initializeDefaultAdmin } from './db.js';
 import { randomUUID } from 'node:crypto';
 
-const adminCount = db.prepare('SELECT COUNT(*) as count FROM admin_users').get() as { count: number };
-
-if (adminCount.count === 0) {
-  createAdmin('admin@southerndelta.edu', 'Department Admin', 'admin123');
-  console.log('Created default admin: admin@southerndelta.edu / admin123');
-  console.log('Change this password after first login.');
-}
+await initializeDefaultAdmin();
 
 const noticeCount = db.prepare('SELECT COUNT(*) as count FROM notices').get() as { count: number };
 
