@@ -1,0 +1,21 @@
+{
+  "name": "notice-board",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w web\"",
+    "build": "npm run build -w web && npm run build -w server",
+    "start": "npm run start -w server",
+    "start:hub": "cross-env ROLE=hub npm run start -w server",
+    "start:edge": "cross-env ROLE=edge npm run start -w server",
+    "db:seed": "npm run db:seed -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3"
+  }
+}
