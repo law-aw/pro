@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, mediaUrl } from '../api';
 import type { Department } from '../types';
+import logo from '../assets/images.jfif';
 
 interface Props {
   search: string;
@@ -20,7 +21,7 @@ export default function KioskHeader({ search, onSearchChange }: Props) {
   return (
     <header className="header">
       {department?.logo_path ? (
-        <img className="brand-logo" src={mediaUrl(department.logo_path)!} alt="Department logo" />
+        <img className="brand-logo" src={logo} alt="Department logo" />
       ) : (
         <div className="brand-logo" aria-hidden />
       )}
