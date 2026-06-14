@@ -79,9 +79,19 @@ export async function noticeRoutes(app: FastifyInstance) {
     const id = randomUUID();
     const now = new Date().toISOString();
 
-    // Handle empty strings for date fields
-    const publishAt = (input.publish_at && input.publish_at.trim()) ? input.publish_at : now;
-    const expiresAt = (input.expires_at && input.expires_at.trim()) ? input.expires_at : null;
+    // Handle empty strings for date fields and convert datetime-local format to ISO
+    const eventStart = (input.event_start && input.event_start.trim()) 
+      ? new Date(input.event_start).toISOString() 
+      : null;
+    const eventEnd = (input.event_end && input.event_end.trim()) 
+      ? new Date(input.event_end).toISOString() 
+      : null;
+    const publishAt = (input.publish_at && input.publish_at.trim()) 
+      ? new Date(input.publish_at).toISOString() 
+      : now;
+    const expiresAt = (input.expires_at && input.expires_at.trim()) 
+      ? new Date(input.expires_at).toISOString() 
+      : null;
 
     db.prepare(`
       INSERT INTO notices (
@@ -98,8 +108,8 @@ export async function noticeRoutes(app: FastifyInstance) {
       input.status || 'published',
       input.audience ?? 'all',
       input.location ?? null,
-      input.event_start ?? null,
-      input.event_end ?? null,
+      eventStart,
+      eventEnd,
       imagePath,
       attachmentPath,
       publishAt,
@@ -139,10 +149,18 @@ export async function noticeRoutes(app: FastifyInstance) {
     const input = fields as unknown as NoticeInput;
     const now = new Date().toISOString();
 
-    // Handle empty strings for date fields
-    const publishAt = (input.publish_at && input.publish_at.trim()) ? input.publish_at : existing.publish_at;
+    // Handle empty strings for date fields and convert datetime-local format to ISO
+    const eventStart = (input.event_start !== undefined)
+      ? ((input.event_start && input.event_start.trim()) ? new Date(input.event_start).toISOString() : null)
+      : existing.event_start;
+    const eventEnd = (input.event_end !== undefined)
+      ? ((input.event_end && input.event_end.trim()) ? new Date(input.event_end).toISOString() : null)
+      : existing.event_end;
+    const publishAt = (input.publish_at && input.publish_at.trim()) 
+      ? new Date(input.publish_at).toISOString() 
+      : existing.publish_at;
     const expiresAt = (input.expires_at !== undefined) 
-      ? ((input.expires_at && input.expires_at.trim()) ? input.expires_at : null)
+      ? ((input.expires_at && input.expires_at.trim()) ? new Date(input.expires_at).toISOString() : null)
       : existing.expires_at;
 
     db.prepare(`
@@ -159,8 +177,8 @@ export async function noticeRoutes(app: FastifyInstance) {
       input.status ?? existing.status,
       input.audience ?? existing.audience,
       input.location !== undefined ? input.location : existing.location,
-      input.event_start !== undefined ? input.event_start : existing.event_start,
-      input.event_end !== undefined ? input.event_end : existing.event_end,
+      eventStart,
+      eventEnd,
       imagePath,
       attachmentPath,
       publishAt,
