@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, mediaUrl } from '../api';
+import { api } from '../api';
 import type { Department } from '../types';
 import logo from '../assets/images.jfif';
 
