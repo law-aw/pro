@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
+import logo from '../../assets/images.jfif';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function AdminLogin() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
+        <img src={logo} alt="Logo" className="login-logo" />
         <h1>Staff login</h1>
         <p className="meta-line">Southern Delta University — Electrical Engineering</p>
         <label>

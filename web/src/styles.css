@@ -64,6 +64,23 @@ a {
   background: var(--accent-soft);
 }
 
+.admin-logo {
+  width: 100%;
+  max-width: 8rem;
+  height: auto;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+}
+
+.login-logo {
+  width: 100%;
+  max-width: 6rem;
+  height: auto;
+  margin: 0 auto 1rem;
+  display: block;
+  border-radius: 0.5rem;
+}
+
 .brand-text h1 {
   margin: 0;
   font-size: clamp(1.1rem, 2.4vw, 1.8rem);

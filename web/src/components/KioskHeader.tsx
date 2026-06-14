@@ -20,11 +20,7 @@ export default function KioskHeader({ search, onSearchChange }: Props) {
 
   return (
     <header className="header">
-      {department?.logo_path ? (
-        <img className="brand-logo" src={logo} alt="Department logo" />
-      ) : (
-        <div className="brand-logo" aria-hidden />
-      )}
+      <img className="brand-logo" src={logo} alt="Department logo" />
       <div className="brand-text">
         <h1>{department?.department_name ?? 'Electrical Engineering'}</h1>
         <p>{department?.university_name ?? 'Southern Delta University'}</p>
