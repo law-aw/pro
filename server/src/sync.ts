@@ -52,6 +52,21 @@ export function applySyncBundle(bundle: SyncBundle): void {
       bundle.department.updated_at,
     );
 
+    // Insert admins FIRST before deleting/inserting notices (to avoid FOREIGN KEY constraint)
+    if (bundle.admins?.length) {
+      const upsertAdmin = db.prepare(`
+        INSERT INTO admin_users (email, display_name, password_hash, active, created_at)
+        VALUES (@email, @display_name, @password_hash, @active, @created_at)
+        ON CONFLICT(email) DO UPDATE SET
+          display_name = excluded.display_name,
+          password_hash = excluded.password_hash,
+          active = excluded.active
+      `);
+      for (const admin of bundle.admins as SyncAdminUser[]) {
+        upsertAdmin.run(admin as unknown as Record<string, string | number>);
+      }
+    }
+
     db.prepare('DELETE FROM notices').run();
     const insert = db.prepare(`
       INSERT INTO notices (
@@ -67,20 +82,6 @@ export function applySyncBundle(bundle: SyncBundle): void {
 
     for (const notice of bundle.notices) {
       insert.run(notice as unknown as Record<string, string | number | null>);
-    }
-
-    if (bundle.admins?.length) {
-      const upsertAdmin = db.prepare(`
-        INSERT INTO admin_users (email, display_name, password_hash, active, created_at)
-        VALUES (@email, @display_name, @password_hash, @active, @created_at)
-        ON CONFLICT(email) DO UPDATE SET
-          display_name = excluded.display_name,
-          password_hash = excluded.password_hash,
-          active = excluded.active
-      `);
-      for (const admin of bundle.admins as SyncAdminUser[]) {
-        upsertAdmin.run(admin as unknown as Record<string, string | number>);
-      }
     }
 
     for (const file of bundle.media) {
