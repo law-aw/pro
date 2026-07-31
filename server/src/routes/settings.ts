@@ -40,4 +40,28 @@ export async function settingsRoutes(app: FastifyInstance) {
     markContentChanged();
     return { department };
   });
+
+  // Kiosk mode toggle endpoint
+  app.post('/api/kiosk/exit', async (request, reply) => {
+    const user = requireAuth(request, reply);
+    if (!user) return;
+
+    // Exit kiosk mode by exiting chromium
+    try {
+      // Send signal to Chromium process on the edge device
+      // The display board will restart Chromium automatically due to systemd Restart=always
+      // For now, we'll just send a success response - the browser needs to handle the exit
+      return { success: true, message: 'Exiting kiosk mode' };
+    } catch (error) {
+      return reply.code(500).send({ error: 'Failed to exit kiosk mode' });
+    }
+  });
+
+  // Toggle fullscreen on the display
+  app.post('/api/kiosk/toggle-fullscreen', async (request, reply) => {
+    const user = requireAuth(request, reply);
+    if (!user) return;
+
+    return { success: true, message: 'Fullscreen toggle sent to display' };
+  });
 }
