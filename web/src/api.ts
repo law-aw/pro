@@ -47,6 +47,8 @@ export const api = {
     request<{ role: string; hubConfigured: boolean; syncHubUrl: string | null; lastSyncAt: string | null }>(
       '/api/sync/status',
     ),
+  exitKiosk: () => request<{ success: boolean; message: string }>('/api/kiosk/exit', { method: 'POST' }),
+  toggleFullscreen: () => request<{ success: boolean; message: string }>('/api/kiosk/toggle-fullscreen', { method: 'POST' }),
 };
 
 export function mediaUrl(path: string | null): string | null {
