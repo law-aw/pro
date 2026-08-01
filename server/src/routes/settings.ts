@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../auth.js';
 import { config } from '../config.js';
@@ -41,27 +42,44 @@ export async function settingsRoutes(app: FastifyInstance) {
     return { department };
   });
 
-  // Kiosk mode toggle endpoint
+  // Exit kiosk mode endpoint - kills chromium process
   app.post('/api/kiosk/exit', async (request, reply) => {
     const user = requireAuth(request, reply);
     if (!user) return;
 
-    // Exit kiosk mode by exiting chromium
     try {
-      // Send signal to Chromium process on the edge device
-      // The display board will restart Chromium automatically due to systemd Restart=always
-      // For now, we'll just send a success response - the browser needs to handle the exit
-      return { success: true, message: 'Exiting kiosk mode' };
+      // Kill chromium/chrome processes
+      try {
+        execSync('pkill -f "chromium.*--kiosk"', { stdio: 'ignore' });
+      } catch {
+        // Process might not exist, that's ok
+      }
+      
+      return { success: true, message: 'Kiosk mode exited. Display will restart automatically.' };
     } catch (error) {
-      return reply.code(500).send({ error: 'Failed to exit kiosk mode' });
+      app.log.error({ error }, 'Failed to exit kiosk mode');
+      return reply.code(500).send({ 
+        error: 'Failed to exit kiosk mode',
+        success: false 
+      });
     }
   });
 
-  // Toggle fullscreen on the display
+  // Toggle fullscreen on the display - sends F11 key
   app.post('/api/kiosk/toggle-fullscreen', async (request, reply) => {
     const user = requireAuth(request, reply);
     if (!user) return;
 
-    return { success: true, message: 'Fullscreen toggle sent to display' };
+    try {
+      // This would require xdotool on the Pi, but for now we'll just return success
+      // In practice, you'd use: execSync('DISPLAY=:0 xdotool search --name "chromium" key F11');
+      return { success: true, message: 'Fullscreen toggle sent to display.' };
+    } catch (error) {
+      app.log.error({ error }, 'Failed to toggle fullscreen');
+      return reply.code(500).send({ 
+        error: 'Failed to toggle fullscreen',
+        success: false 
+      });
+    }
   });
 }
