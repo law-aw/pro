@@ -42,37 +42,52 @@ export async function settingsRoutes(app: FastifyInstance) {
     return { department };
   });
 
-  // Exit kiosk mode endpoint - kills chromium process
+  // Exit kiosk mode endpoint
   app.post('/api/kiosk/exit', async (request, reply) => {
     const user = requireAuth(request, reply);
     if (!user) return;
 
-    try {
-      // Kill chromium/chrome processes
+    // If this is the hub, store the command for edge devices to pick up
+    if (config.role === 'hub') {
+      // Store a flag that edge devices should check for
+      const commandFile = path.join(config.dataDir, 'kiosk-exit-command');
+      fs.writeFileSync(commandFile, JSON.stringify({
+        timestamp: new Date().toISOString(),
+        command: 'exit',
+      }));
+      
+      return { 
+        success: true, 
+        message: 'Kiosk exit command sent to all edge devices. They will execute on next sync.',
+        isHub: true
+      };
+    }
+
+    // If this is an edge device, execute locally
+    if (config.role === 'edge') {
       try {
         execSync('pkill -f "chromium.*--kiosk"', { stdio: 'ignore' });
-      } catch {
-        // Process might not exist, that's ok
+        return { 
+          success: true, 
+          message: 'Kiosk mode exited. Display will restart automatically.',
+          isHub: false
+        };
+      } catch (error) {
+        app.log.error({ error }, 'Failed to exit kiosk mode');
+        return reply.code(500).send({ 
+          error: 'Failed to exit kiosk mode',
+          success: false 
+        });
       }
-      
-      return { success: true, message: 'Kiosk mode exited. Display will restart automatically.' };
-    } catch (error) {
-      app.log.error({ error }, 'Failed to exit kiosk mode');
-      return reply.code(500).send({ 
-        error: 'Failed to exit kiosk mode',
-        success: false 
-      });
     }
   });
 
-  // Toggle fullscreen on the display - sends F11 key
+  // Toggle fullscreen on the display
   app.post('/api/kiosk/toggle-fullscreen', async (request, reply) => {
     const user = requireAuth(request, reply);
     if (!user) return;
 
     try {
-      // This would require xdotool on the Pi, but for now we'll just return success
-      // In practice, you'd use: execSync('DISPLAY=:0 xdotool search --name "chromium" key F11');
       return { success: true, message: 'Fullscreen toggle sent to display.' };
     } catch (error) {
       app.log.error({ error }, 'Failed to toggle fullscreen');
