@@ -3,6 +3,7 @@ import path from 'node:path';
 import { config } from './config.js';
 import { bumpSyncVersion, db, getDepartment, getSyncVersion, runTransaction } from './db.js';
 import type { Notice, SyncBundle, SyncAdminUser } from './types.js';
+import { checkAndExecuteKioskCommand } from './kiosk.js';
 
 function collectMediaFiles(notices: Notice[]): { filename: string; base64: string }[] {
   const files = new Set<string>();
@@ -135,6 +136,9 @@ export function startSyncLoop(onResult?: (result: { ok: boolean; message: string
   if (config.role !== 'edge' || !config.syncHubUrl) return;
 
   const run = async () => {
+    // Check for kiosk commands first
+    checkAndExecuteKioskCommand();
+    
     const result = await pullFromHub();
     onResult?.(result);
   };
